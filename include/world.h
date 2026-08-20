@@ -43,27 +43,45 @@ public:
     // 输出所有实体信息到控制台
     void printEntityInfo();
 
-    // 根据ID查找实体
-    Entity* getEntity(int id_);
 
+
+    
+    Entity* World::getEntity(int id_) {
+        for(auto e : entityList) {
+            if(e->getId() == id_) return e;
+        }
+        return nullptr;
+    }
     // 世界tick+1
-    void tickGrow();
-
+    void World::tickGrow(){
+        worldTick++;
+    }
     // 获取当前世界tick数
-    int getWorldTick();
+    int getWorldTick() {
+        return worldTick;
+    }
 
-    // 分配新实体ID并返回
-    int registerId() ;
-
-    // 获取所有实体数据的快照列表（用于存档/拷贝）
-    std::vector<EntityData> getEntityListData() const;
-
-    // 获取实体指针列表的引用（渲染用）
-    std::vector<Entity*>* getEntityListPtr();
-
-    // 推进一个完整的世界tick：tick+1 + 更新实体 + （可选）打印信息
-    void worldNextTick();
-
-    // 将实体注册到实体列表（由Entity构造函数调用）
-    void registerEntity(Entity* e);
+    int registerId() {
+        id++;
+        return id;
+    }
+    // ============================================================
+    // 获取实体指针列表的引用（渲染器遍历用）
+    // ============================================================
+    std::vector<Entity*>* getEntityListPtr() {
+        return &entityList;
+    }
+    // ============================================================
+    // 将实体指针加入列表（由 Entity 构造函数自动调用）
+    // ============================================================
+    void registerEntity(Entity* e) {
+        entityList.push_back(e);
+    }
+    // ============================================================
+    // 推进一个完整的世界tick：tick+1 → 更新所有实体
+    // ============================================================
+    void worldNextTick(){
+        tickGrow();
+        updateEntityList();
+    }
 };

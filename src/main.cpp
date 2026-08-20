@@ -10,7 +10,7 @@
 // raylib数学工具，Vector3向量、向量运算
 #include "raymath.h"
 // 我们自己写的实体头文件，Entity类、updateEntityList、常量定义都在这里
-#include "entity.h"
+#include "entities/entity.h"
 #include "world.h"
 #include "raylib_tool.h"
 // 存放Entity*指针的动态数组，用来管理全部实体
@@ -52,19 +52,7 @@ TODO:: 珍珠空爆模拟流程
 3. 查看模拟结果
 */
 
-// ============================================================
-// 根据ID查找实体指针
-// ============================================================
-Entity* ID2ptr(int id){
-    for (Entity* e : *world.getEntityListPtr())
-    {
-        if (e->getId() == id)
-        {
-            return e;
-        }
-    }
-    return nullptr;
-}
+
 
 // ============================================================
 // 条件触发暂停
@@ -76,7 +64,7 @@ void triggerSimulationPause(bool condition){
     }
 }
 bool isMeetCondition(){
-    double dy=std::abs(ID2ptr(tntID[3])->getY()+0.0612500011920928955078125-0.2125000059604644775390625-ID2ptr(pearlId)->getY());
+    double dy=std::abs(world.getEntity(tntID[3])->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
     double moddy = std::fmod(dy,1.0);
     if(moddy < 1e-6&&dy < 50){
         std::cout<<"meet condition:"<<dy<<std::endl;
@@ -85,62 +73,7 @@ bool isMeetCondition(){
     return false;
 }
 void beforeTick(){//用于初始化一些东西
-    if(world.getWorldTick() == 22){
-        copyWorld = world;
-    }else if(world.getWorldTick() == 80){
 
-        if(modifier >= 100){
-            if(delayTick >= 78){
-                if(loopCount >= 10){
-                    modifier = 1;
-                    loopCount = 0;
-                    delayTick = 0;
-
-                    world = copyWorld;
-                }else{
-                modifier = 1;
-                loopCount++;
-                delayTick = 0;
-                world = copyWorld;
-                }
-            }
-            modifier = 0;
-            delayTick ++;
-            world = copyWorld;
-        }
-        else{
-            world = copyWorld;
-            modifier++;          // 循环次数+1
-        }
-    }
-    if(world.getWorldTick() == 22+delayTick){
-        tntID[2]=world.spawnEntity(new Entity(&world, "tnt", FIXED,
-            8+loopCount,
-            0.5099999904632568,110,0.5099999904632568,
-            0,0,0,
-            0.98f/16,
-            0.04,
-            0.98));
-        ID2ptr(tntID[2])->setRemainingTick(0);
-        tntID[2]=world.spawnEntity(new Entity(&world, "tnt", FIXED,
-            8+loopCount,
-            -0.5099999904632568,110,-0.5099999904632568,
-            0,0,0,
-            0.98f/16,
-            0.04,
-            0.98));
-        ID2ptr(tntID[2])->setRemainingTick(0);
-        //空爆tnt 与推进差0.5b
-        tntID[3]=world.spawnEntity(new Entity(&world, "tnt", FREE,
-            1,
-            0.009999990463256836,110+modifier*0.0625,0.009999990463256836,
-            0,0,0,
-            0.98f/16,
-            0.04,
-            0.98));
-
-    }
-    
 }
 // ============================================================
 // 流程执行器：所有条件触发逻辑写在这里
@@ -152,34 +85,7 @@ void afterTick()
 }
 
 void initSimulation(){
-    // ===== tick=0：生成初始场景 =====
-    // 生成末影珍珠（从空中发射）
-    pearlId = world.spawnEntity(new Entity(&world, "pearl", FREE,
-        1,
-        0,97.09704180337363,0,//0,100.34874953576529,0,
-        0,-0.41562671799462986,0,//0.371773
-        0.85f*0.25f,
-        0.03,
-        0.99f));
-    // 生成两个推进TNT（固定在珍珠两侧）
-    tntID[0]=world.spawnEntity(new Entity(&world, "tnt", FIXED,
-        10,
-        1.0099999904632568,96.5,1.0099999904632568,
-        0,0,0,
-        0.98f/16,
-        0.04,
-        0.98));
-    tntID[1]=world.spawnEntity(new Entity(&world, "tnt", FIXED,
-        10,
-        -1.0099999904632568,96.5,-1.0099999904632568,
-        0,0,0,
-        0.98f/16,
-        0.04,
-        0.98));
-    ID2ptr(tntID[0])->setRemainingTick(0);
-    ID2ptr(tntID[1])->setRemainingTick(0); 
-    // // 备份当前世界状态（用于后续回溯）
-    // copyWorld = world;
+
 }
 
 // ============================================================
@@ -333,7 +239,7 @@ int main()
 
         // ===== 显示世界信息和实体列表 =====
         int yText = 40;
-        char buf[256];
+        char buf[256]{};
         sprintf(buf,"LoopTimes: %d", loopCount);
         DrawText(buf, 10, yText,16, BLACK);
         yText += 22;
@@ -349,15 +255,7 @@ int main()
         yText += 22;
         for (Entity* e : *world.getEntityListPtr())
         {
-            char buf[256]{};
-            if(strcmp(e->getName(),"tnt") == 0)
-            {
-                sprintf(buf,"%s |count:%d | remain:%d | y=%.2f", e->getName(),e->getCount(), e->getRemainingTick(), (double)e->getY());
-            }
-            else
-            {
-                sprintf(buf,"%s | tick:%d | y=%.2f", e->getName(), e->getTick(), (double)e->getY());
-            }
+            sprintf(buf,"%s |id:%d | tick:%d | y=%.2f", e->getName(),e->getId(), e->getTick(), (double)e->getY());
             DrawText(buf, 10, yText,16, BLACK);
             yText += 22;
         }

@@ -9,7 +9,7 @@
 // raylib数学工具，Vector3向量、向量运算
 #include "raymath.h"
 // 我们自己写的实体头文件，Entity类、updateEntityList、常量定义都在这里
-#include "entity.h"
+#include "entities/entity.h"
 #include "world.h"
 #include "raylib_tool.h"
 // 存放Entity*指针的动态数组，用来管理全部实体

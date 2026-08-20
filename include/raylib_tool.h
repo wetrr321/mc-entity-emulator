@@ -7,7 +7,7 @@
 #pragma once
 #include "raylib.h"
 #include "world.h"
-#include "entity.h"
+#include "entities/entity.h"
 #include "raymath.h"
 
 // 仿真渲染器类
