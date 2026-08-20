@@ -5,8 +5,10 @@
 // ============================================================
 
 #pragma once
+#include <stdio.h>
 #include <vector>
-#include "entity.h"
+
+class Entity;
 
 // 世界数据快照结构体
 struct WorldData{
@@ -46,14 +48,9 @@ public:
 
 
     
-    Entity* World::getEntity(int id_) {
-        for(auto e : entityList) {
-            if(e->getId() == id_) return e;
-        }
-        return nullptr;
-    }
+    Entity* getEntity(int id_) ;
     // 世界tick+1
-    void World::tickGrow(){
+    void tickGrow(){
         worldTick++;
     }
     // 获取当前世界tick数
@@ -84,4 +81,8 @@ public:
         tickGrow();
         updateEntityList();
     }
+    void uiInfoSprintf(char* buf)
+    {
+        sprintf(buf,"worldTick:%d",worldTick);
+    };
 };

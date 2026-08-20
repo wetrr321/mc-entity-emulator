@@ -1,40 +1,34 @@
 #include "entities/entity.h"
-#include "raylib.h"
 #include <iostream>
 #include <iomanip>
-class Tnt : public Entity
+class Pearl : public Entity
 {
 protected:
-int power = 1;
-int fuse = 80;
+
 public:
-Tnt (World* worldPtr_,//正常构造
+Pearl (World* worldPtr_,//正常构造
     int status_,
-    int power_,
-    int fuse_,
     double x_, double y_, double z_,
     double mx_, double my_, double mz_):
-    Entity(worldPtr_, "tnt", status_,
+    Entity(worldPtr_, "pearl", status_,
     x_, y_, z_,
     mx_, my_, mz_,
-    0, 0.98f/16, 0,//眼部坐标
-    0.98f, 0.98f, 0.98f,//碰撞箱
-    0.04, 0.98),//y加速度 阻力
-    power(power_),
-    fuse(fuse_)
+    0, 0.85f*0.25, 0,//眼部坐标
+    0.25, 0.25, 0.25,//碰撞箱尺寸
+    0.03, 0.99f)//y加速度 阻力
     {
-        color = RED;
+        color={24, 62, 12, 200};
     }
-    Tnt (World* worldPtr_, const Tnt& other):
-        Entity(worldPtr_, other)
-    {
-        power = other.power;
-        fuse = other.fuse;
-    }
+
+Pearl (World* worldPtr_, const Pearl& other):
+    Entity(worldPtr_, other)
+{
+
+}
 public:
     Entity* clone(World* worldPtr) const override
-    {   
-        return new Tnt(worldPtr, *this);
+    {
+        return new Pearl(worldPtr, *this);
     }
     void info() const override
     {
@@ -44,8 +38,6 @@ public:
         cout << right << setw(15) << "name:" << right << setw(25) << name << "\n";
         cout << right << setw(15) << "tick:" << right << setw(25) << tick << "\n";
         cout << right << setw(15) << "status" << right << setw(25) << (status==FIXED?"FIXED":"FREE") << "\n";
-        cout << right << setw(15) << "power:" << right << setw(25) << power << "\n";
-        cout << right << setw(15) << "fuse:" << right << setw(25) << fuse << "\n";
         cout << right << setw(15) << "x:"    << right << setw(25) << x << "\n";
         cout << right << setw(15) << "y:"    << right << setw(25) << y << "\n";
         cout << right << setw(15) << "z:"    << right << setw(25) << z << "\n";
@@ -54,41 +46,37 @@ public:
         cout << right << setw(15) << "mz:"   << right << setw(25) << mz << "\n";
         cout << right << setw(15) << "g:"    << right << setw(25) << g << "\n";
         cout << right << setw(15) << "drag:" << right << setw(25) << drag << "\n";
-        cout << right << setw(15) << "bounding:" << right << setw(25) << bounding_x << "\n";
         cout << "----------------------------------------\n";
     }
     void nextMove() override
     {
-        // TNT运动：先减重力更新坐标，再乘阻力
-        my -= g;
+        // 珍珠运动：速度 = (速度 - 重力) * 阻力
+        my = (my - g) * drag;
         y += my;
-        my = my * drag;
-        x += mx;
         mx = mx * drag;
-        z += mz;
+        x += mx;
         mz = mz * drag;
+        z += mz;
     }
     void applyExplosion(double x_, double y_, double z_, int power) override
     {
-        // 爆心到实体底部的距离
         double d2 = std::sqrt((x-x_)*(x-x_)+(y-y_)*(y-y_)+(z-z_)*(z-z_));
         if(d2 >= 8) return;  // 超出爆炸半径，不受影响
+        // 爆心到实体眼部的距离（用于方向计算）
+        double d1 = std::sqrt((x-x_)*(x-x_)+(y+com_y-y_)*(y+com_y-y_)+(z-z_)*(z-z_));
         // 单位方向向量（从爆心指向实体眼部）
-        double dy = (y-y_)/d2;
-        double dx = (x-x_)/d2;
-        double dz = (z-z_)/d2;
+        double dy = (com_y+y-y_)/d1;
+        double dx = (x-x_)/d1;
+        double dz = (z-z_)/d1;
         // 冲击力 = max(0, 1-d2/8) * 方向 * 威力
         this->my += (std::max(0.0,1-d2/8))*dy*power;
         this->mx += (std::max(0.0,1-d2/8))*dx*power;
         this->mz += (std::max(0.0,1-d2/8))*dz*power;
         std::cout << "Explosion hit " << name <<" m change"<<(std::max(0.0,1-d2/8))<< ".\n";
     }
-    void uiInfoSprintf(char* buf) const override {sprintf(buf,"id: %d, name: %s, tick: %d, power: %d, fuse: %d", id, name, tick, power, fuse);}
+    void uiInfoSprintf(char* buf) const override {sprintf(buf,"id: %d, name: %s, tick: %d", id, name, tick);}
     void nextTick() override
     {
-        fuse--;
         tick++;
     }
-    int getFuse() const {return fuse;}
-    int getPower() const {return power;}
 };

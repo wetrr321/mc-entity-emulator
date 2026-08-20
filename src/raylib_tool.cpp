@@ -87,12 +87,12 @@ void SimRender::camRotate(Vector2 mouseDelta){
 void SimRender::camPan(Vector2 mouseDelta){
     // 相机右向量 = (目标-位置) × 上向量 的归一化
     Vector3 camRight = Vector3Normalize(Vector3CrossProduct(Vector3Subtract(camTarget, camPosition), cam.up));
-    Vector3 camUpDir = cam.up;
+    Vector3 camUpDir = Vector3Normalize(Vector3CrossProduct(Vector3Subtract(camTarget, camPosition), camRight));
     float scaleFactor = 2.5;
     // 沿右向量平移（鼠标水平移动）
     camTarget = Vector3Add(camTarget, Vector3Scale(camRight, -mouseDelta.x * panSpeed * camOrbitalDistance * scaleFactor));
     // 沿上向量平移（鼠标垂直移动）
-    camTarget = Vector3Add(camTarget, Vector3Scale(camUpDir, mouseDelta.y * panSpeed * camOrbitalDistance * scaleFactor));
+    camTarget = Vector3Add(camTarget, Vector3Scale(camUpDir, -mouseDelta.y * panSpeed * camOrbitalDistance * scaleFactor));
 }
 
 // ============================================================
@@ -119,7 +119,7 @@ void SimRender::camUpdate(){
 // 获取实体底部中心坐标（double→float转换）
 // ============================================================
 Vector3 SimRender::getFloatCenter(Entity* e){
-    return {(float)e->getX(), (float)e->getY(), (float)e->getZ()};
+    return {(float)e->getX(), (float)e->getY()+(float)e->getBoundingY()/2, (float)e->getZ()};
 }
 
 // ============================================================
@@ -136,24 +136,11 @@ Vector3 SimRender::getFloatVel(Entity* e){
 // 注意：center.y 上移半个高度，因为实体坐标在底部
 // ============================================================
 void SimRender::renderEntity(Entity* e){
-    Vector3 center = getFloatCenter(e); // 实体底部的中心点
-
-    if (strcmp(e->getName(), "tnt") == 0)
-    {
-        Color col = RED;
-        center.y +=0.98f/2;  // 上移半个TNT高度，使方块居中
-        DrawCube(center, 0.98f, 0.98f, 0.98f, col);
-        DrawCubeWires(center, 0.98f, 0.98f, 0.98f, BLACK);
-    }
-    else
-    {
-        Color col = {24, 62, 12, 200};  // 深绿色（末影珍珠颜色）
-        center.y +=0.25f/2;  // 上移半个珍珠高度
-        DrawCube(center, 0.25f, 0.25f, 0.25f, col);
-        DrawCubeWires(center, 0.25f, 0.25f, 0.25f, BLACK);
-    }
+    Vector3 center = getFloatCenter(e); // 实体的中心点
+    Color col = e->getColor();
+    DrawCube(center, float(e->getBoundingX()), float(e->getBoundingY()), float(e->getBoundingZ()), col);
+    DrawCubeWires(center, float(e->getBoundingX()), float(e->getBoundingY()), float(e->getBoundingZ()), BLACK);
 }
-
 // ============================================================
 // 渲染实体速度箭头
 // 黄色圆柱体（箭杆）+ 黄色圆锥体（箭头）
@@ -199,7 +186,7 @@ void SimRender::renderFrame(){
     ClearBackground({64,64,64,255});  // 深灰色背景
     BeginMode3D(cam);
         DrawGrid(30, 1.0f);  // 30×30 参考网格，每格1米
-
+        SimDrawWorldAxis({0,0,0}, 10.0f);  // 渲染世界原点XYZ轴
         for (Entity* e : *world->getEntityListPtr())
         {
             renderEntity(e);  // 渲染实体方块
@@ -278,4 +265,21 @@ bool SimRender::isDead(){
 // ============================================================
 float SimRender::getFrameTime(){
     return GetFrameTime();
+}
+// 渲染世界原点XYZ调试坐标轴
+// origin:坐标轴起点，axisLen：轴的长度
+void SimRender::SimDrawWorldAxis(Vector3 origin, float axisLen)
+{
+    DrawSphere(origin, 0.25f, YELLOW);
+    // X 红色
+    DrawCylinderEx(origin, {origin.x + axisLen, origin.y, origin.z}, 0.1f, 0.1f, 10, RED);
+    // Y 绿色
+    DrawCylinderEx(origin, {origin.x, origin.y + axisLen, origin.z}, 0.1f, 0.1f, 10, GREEN);
+    // Z 蓝色
+    DrawCylinderEx(origin, {origin.x, origin.y, origin.z + axisLen}, 0.1f, 0.1f, 10, BLUE);
+
+    // 可选：轴端点圆锥箭头
+    DrawCylinderEx({origin.x+axisLen, origin.y, origin.z},{origin.x+axisLen+1.0f, origin.y, origin.z}, 0.2f, 0.0f, 10, RED);
+    DrawCylinderEx({origin.x, origin.y+axisLen, origin.z},{origin.x, origin.y+axisLen+1.0f, origin.z}, 0.2f, 0.0f, 10, GREEN);
+    DrawCylinderEx({origin.x, origin.y, origin.z+axisLen},{origin.x, origin.y, origin.z+axisLen+1.0f}, 0.2f, 0.0f, 10, BLUE);
 }

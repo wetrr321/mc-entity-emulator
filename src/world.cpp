@@ -4,6 +4,7 @@
 // ============================================================
 
 #include "world.h"
+
 #include "entities/entity.h"
 #include "entities/tnt.h"
 #include <cstring>
@@ -118,7 +119,15 @@ void World::printEntityInfo() {
     }
 }
 
-
+// ============================================================
+// 获取实体：根据实体ID返回实体指针
+// ============================================================
+Entity* World::getEntity(int id_){
+        for(auto e : entityList) {
+            if(e->getId() == id_) return e;
+        }
+        return nullptr;
+    }
 
 
 

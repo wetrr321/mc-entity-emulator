@@ -11,6 +11,8 @@
 #include "raymath.h"
 // 我们自己写的实体头文件，Entity类、updateEntityList、常量定义都在这里
 #include "entities/entity.h"
+#include "entities/tnt.h"
+#include "entities/pearl.h"
 #include "world.h"
 #include "raylib_tool.h"
 // 存放Entity*指针的动态数组，用来管理全部实体
@@ -35,16 +37,7 @@ bool isSimulationPaused = false;
 World world("default");     // 主世界
 World copyWorld("copy");    // 备份世界（用于回溯）
 int pearlId = -1;           // 追踪器ID指针
-
-// int loopCount = 6;          // 循环次数计数器
-// int modifier = 2;
-// int delayTick = 6;
-
-int loopCount = 0;          // 循环次数计数器
-int modifier = 1;
-int delayTick = 0;
-
-int tntID[100]={0};
+int tnt1;
 /*
 TODO:: 珍珠空爆模拟流程
 1. 生成合适的珍珠与珍珠推进TNT
@@ -52,19 +45,8 @@ TODO:: 珍珠空爆模拟流程
 3. 查看模拟结果
 */
 
-
-
-// ============================================================
-// 条件触发暂停
-// ============================================================
-void triggerSimulationPause(bool condition){
-    if(condition){
-        isSimulationPaused = true;
-        printf("Simulation Paused,press space to resume\n");
-    }
-}
 bool isMeetCondition(){
-    double dy=std::abs(world.getEntity(tntID[3])->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
+    double dy=std::abs(world.getEntity(tnt1)->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
     double moddy = std::fmod(dy,1.0);
     if(moddy < 1e-6&&dy < 50){
         std::cout<<"meet condition:"<<dy<<std::endl;
@@ -72,42 +54,27 @@ bool isMeetCondition(){
     }
     return false;
 }
-void beforeTick(){//用于初始化一些东西
 
-}
-// ============================================================
-// 流程执行器：所有条件触发逻辑写在这里
-// 在特定tick生成实体、回溯世界等
-// ============================================================
-void afterTick()
-{   
+void flow(){
+    if(world.getWorldTick() == 0){
+        // new Pearl(
+        // &world,FREE,
+        // 0,50,0,
+        // 0,0,0
+        // );
+        for(int i=0;i<200;i++){
+            new Tnt(
+            &world,FREE,1,200-i,
+            0,20,0,
+            0,0.1*i,0
+            );
+        }
 
-}
-
-void initSimulation(){
-
-}
-
-// ============================================================
-// 事件处理器：每帧/每次时钟触发时调用
-// 推进世界一个tick，并执行流程触发器
-// ============================================================
-void eventsHandler(){
-    if(world.getWorldTick() > 22+delayTick){
-        triggerSimulationPause(isMeetCondition());
+        copyWorld=world;
     }
-    if(!isSimulationPaused){
-        beforeTick();
-        world.worldNextTick();      // 世界前进一个tick
-        afterTick();          // 执行流程触发器
-    }else if(IsKeyPressed(KEY_SPACE)){
-        isSimulationPaused = false; // 空格恢复运行
-        beforeTick();
-        world.worldNextTick();      // 世界前进一个tick
-        afterTick();  
-    }
+    if(world.getWorldTick() == 200){world = copyWorld;}
+    world.worldNextTick();
 }
-
 // ============================================================
 // 主函数：程序入口
 // ============================================================
@@ -118,7 +85,7 @@ int main()
     bool isTracking = false;        // 跟踪开关（镜头跟随珍珠）
     float shiftSimTimer = 0.0f;    // Shift连续仿真计时器（毫秒）
     // ------------------------------------------------------------------------
-    initSimulation();
+
     while (!r.isDead())
     {
         float dt = r.getFrameTime();  // 获取当前帧耗时
@@ -135,8 +102,8 @@ int main()
             if(unlimitedSpeedMode)
             {
                 // 无限速模式：一帧内尽可能跑tick，不做时间节流
-                for(int i=0;i<200;i++){
-                    eventsHandler();
+                for(int i=0;i<20;i++){
+                    flow();
                 } // 加安全上限，防止死循环卡死
             }
             else
@@ -145,7 +112,7 @@ int main()
                 shiftSimTimer += dt * 1000.0f;
                 while(shiftSimTimer >= SHIFT_SIM_INTERVAL)
                 {
-                    eventsHandler();
+                    flow();
                     shiftSimTimer -= SHIFT_SIM_INTERVAL;
                 }
             }
@@ -167,7 +134,7 @@ int main()
         // ===== 空格：单次步进 =====
         if (IsKeyPressed(KEY_SPACE))
         {
-            eventsHandler();
+            flow();
         }
 
         // ===== 跟踪逻辑：开启跟踪时，相机跟随第一个珍珠 =====
@@ -240,22 +207,12 @@ int main()
         // ===== 显示世界信息和实体列表 =====
         int yText = 40;
         char buf[256]{};
-        sprintf(buf,"LoopTimes: %d", loopCount);
-        DrawText(buf, 10, yText,16, BLACK);
-        yText += 22;
-        sprintf(buf,"delayTick: %d", delayTick);
-        DrawText(buf, 10, yText,16, BLACK);
-        yText += 22;
-        sprintf(buf,"modifier: %d", modifier);
-        DrawText(buf, 10, yText,16, BLACK);
-        yText += 22;
-
-        sprintf(buf,"worldTick:%d", world.getWorldTick());
+        world.uiInfoSprintf(buf);
         DrawText(buf, 10, yText,16, BLACK);
         yText += 22;
         for (Entity* e : *world.getEntityListPtr())
         {
-            sprintf(buf,"%s |id:%d | tick:%d | y=%.2f", e->getName(),e->getId(), e->getTick(), (double)e->getY());
+            e->uiInfoSprintf(buf);
             DrawText(buf, 10, yText,16, BLACK);
             yText += 22;
         }

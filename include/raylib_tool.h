@@ -82,4 +82,6 @@ public:
 
     // 获取当前帧耗时（秒）
     float getFrameTime();
+    // 渲染世界原点XYZ调试坐标轴
+    void SimDrawWorldAxis(Vector3 origin, float axisLen);
 };

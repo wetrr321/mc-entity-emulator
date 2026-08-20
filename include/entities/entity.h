@@ -6,29 +6,28 @@
 
 #pragma once
 
-#include "world.h"
 #include <iostream>
 #include <iomanip>
 #include <cmath>
 #include <cstring>
-
+#include "world.h"
+#include "raylib.h"
 // TNT 引信倒计时长度（单位：游戏tick，1tick = 0.05秒）
 #define TNT_PERIOD 80
 // 实体状态：固定不动（被方块卡住等情况）
 #define FIXED 0
 // 实体状态：自由运动（空中/水中等）
 #define FREE 1
-
-
+class World;
 // 实体类，继承自 EntityData 以复用数据字段
 // 同时封装实体的运动逻辑、爆炸受击逻辑
 class Entity 
 {
 protected:
+    Color color=WHITE;
     World* my_world;  // 所属世界的指针，用于注册和交互
     int id;           // 实体唯一ID
     int status;       // 实体状态：FIXED 或 FREE
-
     char name[20];    // 实体名称："pearl" 或 "tnt"
     double x, y, z;   // 实体底部坐标（世界坐标系）
     double mx, my, mz;// 实体速度分量（米/tick）
@@ -37,7 +36,6 @@ protected:
     double g;         // 重力加速度
     double drag;      // 空气阻力系数（每tick乘算）
     int tick = 0;     // 实体已存在的tick数
-
 public:
     // 构造函数：创建新实体并注册到世界
     // ============================================================
@@ -54,7 +52,7 @@ public:
         double com_x_, double com_y_,double com_z_,
         double bounding_x_, double bounding_y_, double bounding_z_,
         double g_, double drag_
-    ) :
+    ) : 
     my_world(worldPtr_),
     id(worldPtr_->registerId()),
     status(status_),
@@ -67,6 +65,9 @@ public:
     com_x(com_x_),
     com_y(com_y_),
     com_z(com_z_),
+    bounding_x(bounding_x_),
+    bounding_y(bounding_y_),
+    bounding_z(bounding_z_),
     g(g_),
     drag(drag_)
     {
@@ -74,9 +75,30 @@ public:
         if(my_world != nullptr)
             my_world->registerEntity(this);  // 自动注册到世界实体列表
     }
-
+    Entity(World* worldPtr_, const Entity& other):
+        my_world(worldPtr_)
+    {
+        std::strcpy(name, other.name);
+        id = other.id;
+        status = other.status;
+        x = other.x;
+        y = other.y;
+        z = other.z;
+        mx = other.mx;
+        my = other.my;
+        mz = other.mz;
+        com_x = other.com_x;
+        com_y = other.com_y;
+        com_z = other.com_z;
+        bounding_x = other.bounding_x;
+        bounding_y = other.bounding_y;
+        bounding_z = other.bounding_z;
+        g = other.g;
+        drag = other.drag;
+        tick = other.tick;
+        color = other.color;
+    }
     virtual Entity* clone(World* worldPtr) const = 0;
-
 
     // ============================================================
     // 析构函数：输出销毁日志
@@ -139,7 +161,13 @@ public:
     double getVZ() {return mz;};
 
     // 获取实体眼部相对底部高度
+    double getComX() {return com_x;};
     double getComY() {return com_y;};
+    double getComZ() {return com_z;};
+    // 获取实体边界高度
+    double getBoundingX() {return bounding_x;};
+    double getBoundingY() {return bounding_y;};
+    double getBoundingZ() {return bounding_z;};
 
     // 获取实体名称字符串
     const char* getName() {return name;};
@@ -149,4 +177,6 @@ public:
 
     // 获取实体唯一ID
     int getId() {return id;};
+
+    Color getColor() {return color;};
 };
