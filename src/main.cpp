@@ -4,6 +4,7 @@
 // 支持：空格单步 / Shift连跑 / Caps无限速 / Ctrl跟踪珍珠
 // 右键旋转视角 / 中键平移 / 滚轮缩放 / 左键点击查看实体信息
 // ============================================================
+#include <random>
 #include <iostream>
 // 引入raylib基础库，窗口、绘制、3D功能
 #include "raylib.h"
@@ -23,6 +24,10 @@
 #include <cmath>
 // 读取json文件
 #include "json.hpp"
+
+#define WIDTH 1280
+#define HEIGHT 720
+
 // 目标渲染帧率，窗口每秒刷新多少次，不等于游戏tick
 #define TARGET_FPS 60
 // Shift按住时最大仿真速率（普通模式，每秒20tick）
@@ -45,6 +50,16 @@ TODO:: 珍珠空爆模拟流程
 3. 查看模拟结果
 */
 
+
+// 全局/类成员，只初始化一次，不要放在循环内部！
+std::mt19937 rng;
+std::uniform_real_distribution<double> dist01(0.0,1.0);
+// 获取 [0 , 1) 之间随机浮点数
+double rand01()
+{
+    return dist01(rng);
+}
+
 bool isMeetCondition(){
     double dy=std::abs(world.getEntity(tnt1)->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
     double moddy = std::fmod(dy,1.0);
@@ -62,17 +77,16 @@ void flow(){
         // 0,50,0,
         // 0,0,0
         // );
-        for(int i=0;i<200;i++){
+        for(int i=0;i<100;i++){
             new Tnt(
-            &world,FREE,1,200-i,
+            &world,FREE,1,100-i,
             0,20,0,
-            0,0.1*i,0
+            0,0,0
             );
         }
-
         copyWorld=world;
     }
-    if(world.getWorldTick() == 200){world = copyWorld;}
+    if(world.getWorldTick() == 100){world = copyWorld;}
     world.worldNextTick();
 }
 // ============================================================
@@ -212,6 +226,7 @@ int main()
         yText += 22;
         for (Entity* e : *world.getEntityListPtr())
         {
+            if(yText > 1000){break;}
             e->uiInfoSprintf(buf);
             DrawText(buf, 10, yText,16, BLACK);
             yText += 22;

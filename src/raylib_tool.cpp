@@ -270,16 +270,16 @@ float SimRender::getFrameTime(){
 // origin:坐标轴起点，axisLen：轴的长度
 void SimRender::SimDrawWorldAxis(Vector3 origin, float axisLen)
 {
-    DrawSphere(origin, 0.25f, YELLOW);
+    DrawSphere(origin, 0.2f, YELLOW);
     // X 红色
-    DrawCylinderEx(origin, {origin.x + axisLen, origin.y, origin.z}, 0.1f, 0.1f, 10, RED);
+    DrawCylinderEx(origin, {origin.x + axisLen, origin.y, origin.z}, 0.08f, 0.08f, 10, RED);
     // Y 绿色
-    DrawCylinderEx(origin, {origin.x, origin.y + axisLen, origin.z}, 0.1f, 0.1f, 10, GREEN);
+    DrawCylinderEx(origin, {origin.x, origin.y + axisLen, origin.z}, 0.08f, 0.08f, 10, GREEN);
     // Z 蓝色
-    DrawCylinderEx(origin, {origin.x, origin.y, origin.z + axisLen}, 0.1f, 0.1f, 10, BLUE);
+    DrawCylinderEx(origin, {origin.x, origin.y, origin.z + axisLen}, 0.08f, 0.08f, 10, BLUE);
 
     // 可选：轴端点圆锥箭头
-    DrawCylinderEx({origin.x+axisLen, origin.y, origin.z},{origin.x+axisLen+1.0f, origin.y, origin.z}, 0.2f, 0.0f, 10, RED);
-    DrawCylinderEx({origin.x, origin.y+axisLen, origin.z},{origin.x, origin.y+axisLen+1.0f, origin.z}, 0.2f, 0.0f, 10, GREEN);
-    DrawCylinderEx({origin.x, origin.y, origin.z+axisLen},{origin.x, origin.y, origin.z+axisLen+1.0f}, 0.2f, 0.0f, 10, BLUE);
+    DrawCylinderEx({origin.x+axisLen, origin.y, origin.z},{origin.x+axisLen+1.0f, origin.y, origin.z}, 0.15f, 0.0f, 10, RED);
+    DrawCylinderEx({origin.x, origin.y+axisLen, origin.z},{origin.x, origin.y+axisLen+1.0f, origin.z}, 0.15f, 0.0f, 10, GREEN);
+    DrawCylinderEx({origin.x, origin.y, origin.z+axisLen},{origin.x, origin.y, origin.z+axisLen+1.0f}, 0.15f, 0.0f, 10, BLUE);
 }
