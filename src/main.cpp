@@ -25,8 +25,12 @@
 // 读取json文件
 #include "json.hpp"
 
-#define WIDTH 1280
-#define HEIGHT 720
+#define WIDTH 1900
+#define HEIGHT 1000
+
+//TODO:: 实现Ctrl跟踪选中实体功能
+
+
 
 // 目标渲染帧率，窗口每秒刷新多少次，不等于游戏tick
 #define TARGET_FPS 60
@@ -41,8 +45,8 @@ bool isSimulationPaused = false;
 // ========== 全局世界对象 ==========
 World world("default");     // 主世界
 World copyWorld("copy");    // 备份世界（用于回溯）
-int pearlId = -1;           // 追踪器ID指针
-int tnt1;
+
+
 /*
 TODO:: 珍珠空爆模拟流程
 1. 生成合适的珍珠与珍珠推进TNT
@@ -60,33 +64,33 @@ double rand01()
     return dist01(rng);
 }
 
-bool isMeetCondition(){
-    double dy=std::abs(world.getEntity(tnt1)->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
-    double moddy = std::fmod(dy,1.0);
-    if(moddy < 1e-6&&dy < 50){
-        std::cout<<"meet condition:"<<dy<<std::endl;
-        return true;
-    }
-    return false;
-}
+// bool isMeetCondition(){
+//     double dy=std::abs(world.getEntity(tnt1)->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
+//     double moddy = std::fmod(dy,1.0);
+//     if(moddy < 1e-6&&dy < 50){
+//         std::cout<<"meet condition:"<<dy<<std::endl;
+//         return true;
+//     }
+//     return false;
+// }
 
 void flow(){
     if(world.getWorldTick() == 0){
-        // new Pearl(
-        // &world,FREE,
-        // 0,50,0,
-        // 0,0,0
-        // );
-        for(int i=0;i<100;i++){
-            new Tnt(
-            &world,FREE,1,100-i,
-            0,20,0,
-            0,0,0
-            );
-        }
+        new Pearl(
+        &world,FREE,
+        0,50,0,
+        0,0,0
+        );
+        // for(int i=0;i<1000;i++){
+        //     new Tnt(
+        //     &world,FREE,1,1000-i,
+        //     0,20,0,
+        //     rand01()-0.5,rand01()-0.5,rand01()-0.5
+        //     );
+        // }
         copyWorld=world;
     }
-    if(world.getWorldTick() == 100){world = copyWorld;}
+    if(world.getWorldTick() == 1000){world = copyWorld;}
     world.worldNextTick();
 }
 // ============================================================
@@ -94,9 +98,8 @@ void flow(){
 // ============================================================
 int main()
 {
-    SimRender r(&world);  // 创建渲染器，绑定到主世界
-
-    bool isTracking = false;        // 跟踪开关（镜头跟随珍珠）
+    SimRender r(&world,WIDTH,HEIGHT,TARGET_FPS);  // 创建渲染器，绑定到主世界
+    world.publishMessage("Init World!",GREEN);
     float shiftSimTimer = 0.0f;    // Shift连续仿真计时器（毫秒）
     // ------------------------------------------------------------------------
 
@@ -139,35 +142,12 @@ int main()
 
         Vector2 mouseDelta = GetMouseDelta();
 
-        // ===== Ctrl：切换跟踪开关 =====
-        if(IsKeyPressed(KEY_LEFT_CONTROL))
-        {
-            isTracking = !isTracking;
-        }
-
         // ===== 空格：单次步进 =====
         if (IsKeyPressed(KEY_SPACE))
         {
             flow();
         }
 
-        // ===== 跟踪逻辑：开启跟踪时，相机跟随第一个珍珠 =====
-        if(isTracking)
-        {
-            Entity* targetPearl = nullptr;
-            for(auto e : *world.getEntityListPtr())
-            {
-                if(strcmp(e->getName(), "pearl") == 0)
-                {
-                    targetPearl = e;
-                    break;
-                }
-            }
-            if(targetPearl != nullptr)
-            {
-                r.camFocus({(float)targetPearl->getX(), (float)targetPearl->getY(), (float)targetPearl->getZ()});
-            }
-        }
 
         // ===== 右键旋转视角（跟踪/非跟踪模式都可用） =====
         if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
@@ -176,10 +156,25 @@ int main()
         }
 
         // ===== 中键平移（只有非跟踪模式才允许） =====
-        if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) && !isTracking)
+        if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) && !r.getIsTracking())
         {
             r.camPan(mouseDelta);
         }
+
+        if(r.getIsTracking()){
+            Entity* trackEntity = world.getEntity(r.getTrackingId());
+            if(trackEntity != nullptr)
+                r.camFocus(r.getFloatCenter(trackEntity));
+            else
+                r.setIsTracking(false);
+        }
+
+
+
+
+
+
+
 
         // ===== 滚轮缩放（跟踪模式依然允许） =====
         r.zoom(GetMouseWheelMove());
@@ -188,6 +183,13 @@ int main()
 
         // ===== 射线拾取，获取当前悬浮指向的实体 =====
         Entity* hoverEntity = r.getHoverEntity();
+        int hoverEntityId = hoverEntity == nullptr?0:hoverEntity->getId();
+
+        if(IsKeyDown(KEY_LEFT_CONTROL)&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&hoverEntityId > 0){
+            if(hoverEntityId != -1)
+            r.setIsTracking(!r.getIsTracking());
+            r.setTrackingId(hoverEntityId);
+        }
 
         // ===== 左键单击：输出实体详细信息到控制台 =====
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -205,8 +207,8 @@ int main()
         }
 
         // ===== UI 提示信息 =====
-        const char* trackHint = isTracking ? "TRACKING PEARL [Ctrl to untrack]" : "SPACE=SingleTick | SHIFT=Run | Caps:Toggle UnlimitedSpeed | Ctrl:TrackPearl | RMB Rot | MMB Pan | Wheel Zoom";
-        DrawText(trackHint, 10, 10, 8, RED);
+        const char* trackHint = "SPACE=SingleTick | SHIFT=Run | Caps:Toggle UnlimitedSpeed | Ctrl:TrackPearl | RMB Rot | MMB Pan | Wheel Zoom";
+        DrawText(trackHint, 10, 10, 12, RED);
 
         // 显示当前仿真模式
         if(unlimitedSpeedMode)
@@ -217,20 +219,18 @@ int main()
         {
             DrawText("MODE: LIMITED 20TPS",10,24,12,GREEN);
         }
-
-        // ===== 显示世界信息和实体列表 =====
-        int yText = 40;
-        char buf[256]{};
-        world.uiInfoSprintf(buf);
-        DrawText(buf, 10, yText,16, BLACK);
-        yText += 22;
-        for (Entity* e : *world.getEntityListPtr())
-        {
-            if(yText > 1000){break;}
-            e->uiInfoSprintf(buf);
-            DrawText(buf, 10, yText,16, BLACK);
-            yText += 22;
+        if(r.getIsTracking()){
+            DrawText(("TRACKING: "+std::to_string(r.getTrackingId())).c_str(),10,38,12,GREEN);
         }
+        else{
+            DrawText("NOT TRACKING",10,38,12,RED);
+        }
+        // ===== 显示世界信息和实体列表 =====
+        r.drawEntityLogUi();
+
+        // ===== 显示日志UI =====
+
+        r.drawLogUi();
 
         r.endRender();
     }

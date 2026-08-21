@@ -18,6 +18,7 @@ Pearl (World* worldPtr_,//正常构造
     0.03, 0.99f)//y加速度 阻力
     {
         color={24, 62, 12, 200};
+        worldPtr_->publishMessage("Pearl created",WHITE);
     }
 
 Pearl (World* worldPtr_, const Pearl& other):
@@ -72,7 +73,7 @@ public:
         this->my += (std::max(0.0,1-d2/8))*dy*power;
         this->mx += (std::max(0.0,1-d2/8))*dx*power;
         this->mz += (std::max(0.0,1-d2/8))*dz*power;
-        std::cout << "Explosion hit " << name <<" m change"<<(std::max(0.0,1-d2/8))<< ".\n";
+        my_world->publishMessage("Explosion hit "+std::string(name)+" id: "+std::to_string(id)+" m change "+std::to_string(std::max(0.0,1-d2/8)),WHITE);
     }
     void uiInfoSprintf(char* buf) const override {sprintf(buf,"id: %d, name: %s, tick: %d", id, name, tick);}
     void nextTick() override

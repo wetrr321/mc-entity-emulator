@@ -104,7 +104,7 @@ public:
     // 析构函数：输出销毁日志
     // ============================================================
     virtual ~Entity() {
-        std::cout << "Entity destroied: " << name << "\n";
+        my_world->publishMessage("Entity destroied: "+std::string(name)+" id: "+std::to_string(id),RED);
     }
 public:
     // ============================================================

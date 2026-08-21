@@ -8,6 +8,7 @@
 #include "raylib.h"
 #include "world.h"
 #include "entities/entity.h"
+#include "message.h"
 #include "raymath.h"
 
 // 仿真渲染器类
@@ -27,6 +28,12 @@ private:
     const float panSpeed = 0.0005f;         // 鼠标平移灵敏度
     float camOrbitalDistance = 100.0f;      // 相机到目标的轨道半径（正交模式下=fovy）
 
+    int width,height;   // 窗口宽度、高度
+
+    bool isTracking = false;       // 是否正在跟踪实体标志
+    int trackingId = -1;           // 追踪器ID指针
+
+
     bool unlimitedSpeedMode = false;  // 无限速模拟开关
 
     // 初始化相机默认参数
@@ -36,7 +43,7 @@ private:
     void recomputeCameraSpherical();
 public:
     // 构造函数：创建窗口并初始化相机
-    SimRender(World* world_);
+    SimRender(World* world_, int width_, int height_, int target_fps_);
 
     // 设置相机注视目标（用于跟踪实体）
     void camFocus(Vector3 targetPos);
@@ -84,4 +91,44 @@ public:
     float getFrameTime();
     // 渲染世界原点XYZ调试坐标轴
     void SimDrawWorldAxis(Vector3 origin, float axisLen);
+    // 放在 EndMode3D(); 之后
+    void drawLogUi()
+    {
+        const auto& logs = world->getMessageStack();
+        int y = 10;
+        DrawText("Misc. output", width - 300, y, 24, GREEN);
+        y += 24;
+        for(const auto& msg : logs)
+        {
+            DrawText(msg.msg.c_str(), width - 300, y, 14, msg.color);
+            y += 18;
+        }
+    }
+    void drawEntityLogUi(){
+        int yText = 50;
+        char buf[256]{};
+        world->uiInfoSprintf(buf);
+        DrawText(buf, 10, yText,16, BLACK);
+        yText += 22;
+        for (Entity* e : *world->getEntityListPtr())
+        {
+            if(yText > height){break;}
+            e->uiInfoSprintf(buf);
+            DrawText(buf, 10, yText,16, BLACK);
+            yText += 22;
+        }
+    }
+
+    bool getIsTracking()const{
+        return isTracking;
+    }
+    void setIsTracking(bool isTracking_){
+        isTracking = isTracking_;
+    }
+    void setTrackingId(int trackingId_){
+        trackingId = trackingId_;
+    }
+    int getTrackingId()const{
+        return trackingId;
+    }
 };

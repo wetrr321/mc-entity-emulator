@@ -24,6 +24,7 @@ Tnt (World* worldPtr_,//正常构造
     fuse(fuse_)
     {
         color = RED;
+        worldPtr_->publishMessage("TNT created",WHITE);
     }
     Tnt (World* worldPtr_, const Tnt& other):
         Entity(worldPtr_, other)
@@ -81,7 +82,7 @@ public:
         this->my += (std::max(0.0,1-d2/8))*dy*power;
         this->mx += (std::max(0.0,1-d2/8))*dx*power;
         this->mz += (std::max(0.0,1-d2/8))*dz*power;
-        std::cout << "Explosion hit " << name <<" m change"<<(std::max(0.0,1-d2/8))<< ".\n";
+        my_world->publishMessage("Explosion hit "+std::string(name)+" id: "+std::to_string(id)+" m change "+std::to_string(std::max(0.0,1-d2/8)),WHITE);
     }
     void uiInfoSprintf(char* buf) const override {sprintf(buf,"id: %d, name: %s, tick: %d, power: %d, fuse: %d", id, name, tick, power, fuse);}
     void nextTick() override

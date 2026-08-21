@@ -4,7 +4,7 @@
 // ============================================================
 
 #include "world.h"
-
+#include "message.h"
 #include "entities/entity.h"
 #include "entities/tnt.h"
 #include <cstring>
@@ -37,7 +37,7 @@ WorldData(other)
 // ============================================================
 World& World::operator=(const World& other) {
     if(this == &other) return *this;  // 防止自赋值
-    std::cout << "Copy World!" << std::endl;
+    this->publishMessage("Rewind World!",YELLOW);
     // 销毁自己的实体列表
     for(auto e : entityList) {
         delete e;
@@ -62,14 +62,7 @@ World::~World() {
     entityList.clear();
 }
 
-// ============================================================
-// 生成实体：实体必须用 new 创建传入，World接管其生命周期
-// 返回实体ID，若传入 nullptr 则返回 -1
-// ============================================================
-int World::spawnEntity(Entity* e) {
-    if(e == nullptr) return -1;
-    return e->getId();
-}
+
 
 // ============================================================
 // 更新所有实体：一个完整的游戏tick

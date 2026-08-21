@@ -5,8 +5,14 @@
 // ============================================================
 
 #pragma once
+#include <iostream>
+#include "message.h"
+#include "raylib.h"
+#include "string"
 #include <stdio.h>
 #include <vector>
+#define MESSAGE_MAX 40
+#define MESSAGE_LIFE 1
 
 class Entity;
 
@@ -22,6 +28,7 @@ class World : public WorldData
 {
 private:
     std::vector<Entity*> entityList;  // 实体指针列表（World负责释放内存）
+    std::vector<Message> messageStack; // 消息stack（World负责释放内存）
     char name[20];                     // 世界名称
 public:
     // 构造函数：创建指定名称的世界
@@ -80,9 +87,32 @@ public:
     void worldNextTick(){
         tickGrow();
         updateEntityList();
+        updateMessageStack();
     }
     void uiInfoSprintf(char* buf)
     {
         sprintf(buf,"worldTick:%d",worldTick);
     };
+    void publishMessage(std::string msg,Color col) {
+        Message m;
+        m.msg = msg;
+        m.color = col;
+        m.birthTick = worldTick;
+        messageStack.push_back(m);
+        if(messageStack.size() > MESSAGE_MAX) {
+            messageStack.erase(messageStack.begin());
+        }
+    }
+    void updateMessageStack() {
+        for(auto i = messageStack.begin(); i != messageStack.end();) {
+            if(worldTick - i->birthTick >= MESSAGE_LIFE) {
+                i = messageStack.erase(i);
+            }else{
+                i++;
+            }
+        }
+    }
+    std::vector<Message>& getMessageStack() {
+        return messageStack;
+    }
 };

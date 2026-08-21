@@ -53,11 +53,13 @@ void SimRender::recomputeCameraSpherical()
 // ============================================================
 // 构造函数：创建窗口并初始化相机
 // ============================================================
-SimRender::SimRender(World* world_):
+SimRender::SimRender(World* world_, int width_, int height_, int target_fps_):
 world(world_)
 {
-    InitWindow(600, 1000, "MC空爆仿真");
-    SetTargetFPS(DEFAULT_FPS);
+    width = width_;
+    height = height_;
+    InitWindow(width_, height_, "MC空爆仿真");
+    SetTargetFPS(target_fps_);
     initCamera();
 }
 
@@ -204,14 +206,12 @@ void SimRender::renderTooltip(Entity* e){
     Vector2 mousePos = GetMousePosition();
     char tooltipBuf[256];
     sprintf(tooltipBuf,
-        "%s | tick:%d\nY=%.2f  VY=%.2f",
+        "%s | id:%d\nleft click to get info",
         e->getName(),
-        e->getTick(),
-        e->getY(),
-        e->getVY()
+        e->getId()
     );
     // 半透明黑色背景
-    DrawRectangle((int)mousePos.x + 14, (int)mousePos.y + 14, 210, 62, Fade(BLACK,0.65f));
+    DrawRectangle((int)mousePos.x + 14, (int)mousePos.y + 14, 210, 32, Fade(BLACK,0.65f));
     // 白色文字
     DrawText(tooltipBuf, (int)mousePos.x + 18, (int)mousePos.y + 18,14, WHITE);
 }
@@ -228,12 +228,11 @@ Entity* SimRender::getHoverEntity(){
 
     for (Entity* e : *world->getEntityListPtr())
     {
-        float h = (float)(2.0 * e->getComY());  // 实体高度=2倍眼部高度
         Vector3 center = getFloatCenter(e);
         // 构造包围盒：从底部中心向上延伸
         BoundingBox box;
-        box.min = (Vector3){center.x - 0.5f, center.y , center.z - 0.5f};
-        box.max = (Vector3){center.x + 0.5f, center.y + h, center.z + 0.5f};
+        box.min = (Vector3){center.x - float(e->getBoundingX()/2), center.y - float(e->getBoundingY()/2), center.z - float(e->getBoundingZ()/2)};
+        box.max = (Vector3){center.x + float(e->getBoundingX()/2), center.y + float(e->getBoundingY()/2), center.z + float(e->getBoundingZ()/2)};
 
         // 射线与包围盒碰撞检测
         RayCollision col = GetRayCollisionBox(mouseRay, box);
