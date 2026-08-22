@@ -1,3 +1,4 @@
+#pragma once
 #include "entities/entity.h"
 #include "raylib.h"
 #include <iostream>
@@ -82,7 +83,7 @@ public:
         this->my += (std::max(0.0,1-d2/8))*dy*power;
         this->mx += (std::max(0.0,1-d2/8))*dx*power;
         this->mz += (std::max(0.0,1-d2/8))*dz*power;
-        my_world->publishMessage("Explosion hit "+std::string(name)+" id: "+std::to_string(id)+" m change "+std::to_string(std::max(0.0,1-d2/8)),WHITE);
+        my_world->publishMessage("Explosion hit "+std::string(name)+" id: "+std::to_string(id)+" m change "+std::to_string(std::max(0.0,1-d2/8)*power),WHITE);
     }
     void uiInfoSprintf(char* buf) const override {sprintf(buf,"id: %d, name: %s, tick: %d, power: %d, fuse: %d", id, name, tick, power, fuse);}
     void nextTick() override
@@ -91,5 +92,6 @@ public:
         tick++;
     }
     int getFuse() const {return fuse;}
-    int getPower() const {return power;}
+    int getExplosionPower() const override {return power;}
+    bool shouldExpode() override {return fuse <= 0;}
 };

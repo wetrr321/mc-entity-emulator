@@ -6,10 +6,10 @@
 #include "world.h"
 #include "message.h"
 #include "entities/entity.h"
-#include "entities/tnt.h"
 #include <cstring>
 #include <iostream>
-
+#define MESSAGE_MAX 40
+#define MESSAGE_LIFE 1
 // ============================================================
 // 构造函数：初始化世界名称和计数器
 // ============================================================
@@ -25,7 +25,8 @@ World::World(const char* name_)
 // 每个实体通过 Entity 的拷贝构造函数在新世界中重建
 // ============================================================
 World::World(const World& other) :
-WorldData(other)
+    id(other.id),
+    worldTick(other.worldTick)
 {
     for(auto i = other.entityList.begin(); i != other.entityList.end(); i++) {
         entityList.push_back((*i)->clone(this));
@@ -44,7 +45,8 @@ World& World::operator=(const World& other) {
     }
     entityList.clear();
     // 拷贝世界数据（tick、ID计数）
-    WorldData::operator=(other);
+    id = other.id;
+    worldTick = other.worldTick;
     // 深拷贝所有实体到当前世界
     for(auto i = other.entityList.begin(); i != other.entityList.end(); i++) {
         entityList.push_back((*i)->clone(this));
@@ -76,30 +78,27 @@ void World::updateEntityList()
     {
         (*i)->nextTick();
         (*i)->nextMove();
-        if(strcmp((*i)->getName(), "tnt") == 0)
+        if((*i)->shouldExpode())
         {
-            Tnt* tnt_ptr = dynamic_cast<Tnt*>(*i);
-            if(tnt_ptr && tnt_ptr->getFuse() <= 0)
+            // 爆炸，遍历全部实体施加冲击力
+            for(auto j = entityList.begin(); j != entityList.end(); ++j)
             {
-                // 爆炸，遍历全部实体施加冲击力
-                for(auto j = entityList.begin(); j != entityList.end(); ++j)
-                {
-                    if(i == j) continue;
-                    (*j)->applyExplosion(
-                        tnt_ptr->getX(),
-                        tnt_ptr->getComY() + tnt_ptr->getY(),
-                        tnt_ptr->getZ(),
-                        tnt_ptr->getPower()
-                    );
-                }
-                // ✅只有倒计时到0才销毁
-                delete *i;
-                i = entityList.erase(i);
-                continue; // 直接跳到下一轮for，不走下面 ++i
+                if(i == j) continue;
+                (*j)->applyExplosion(
+                    (*i)->getX(),
+                    (*i)->getComY() + (*i)->getY(),
+                    (*i)->getZ(),
+                    (*i)->getExplosionPower()
+                );
             }
-            // tnt但是倒计时没结束：正常往下走，i++
+            // ✅只有倒计时到0才销毁
+            delete *i;
+            i = entityList.erase(i);
+            continue; // 直接跳到下一轮for，不走下面 ++i
+        }else{
+            ++i;
         }
-        ++i;
+
     }
 }
 
@@ -122,9 +121,40 @@ Entity* World::getEntity(int id_){
         return nullptr;
     }
 
+void World::registerEntity(Entity* e) {
+    entityList.push_back(e);
+}
+void World::worldNextTick(){
+    tickGrow();
+    updateEntityList();
+    updateMessageStack();
+}
 
+void World::uiInfoSprintf(char* buf)
+{
+    sprintf(buf,"worldTick:%d",worldTick);
+}
 
+void World::publishMessage(std::string msg,Color col) {
+    Message m;
+    m.msg = msg;
+    m.color = col;
+    m.birthTick = worldTick;
+    messageStack.push_back(m);
+    if(messageStack.size() > MESSAGE_MAX) {
+        messageStack.erase(messageStack.begin());
+    }
+}
 
+void World::updateMessageStack() {
+    for(auto i = messageStack.begin(); i != messageStack.end();) {
+        if(worldTick - i->birthTick >= MESSAGE_LIFE) {
+            i = messageStack.erase(i);
+        }else{
+            i++;
+        }
+    }
+}
 
 
 

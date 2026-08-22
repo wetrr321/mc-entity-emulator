@@ -78,7 +78,7 @@ void SimRender::camFocus(Vector3 targetPos){
 void SimRender::camRotate(Vector2 mouseDelta){
     camYaw   -= mouseDelta.x * rotSpeed;
     camPitch -= mouseDelta.y * rotSpeed;
-    camPitch = Clamp(camPitch, -89.99f, 89.99f);  // 避免万向锁
+    camPitch = Clamp(camPitch, -89.9995f, 89.9995f);  // 避免万向锁
 }
 
 // ============================================================
@@ -189,7 +189,7 @@ void SimRender::renderFrame(){
     BeginMode3D(cam);
         DrawGrid(30, 1.0f);  // 30×30 参考网格，每格1米
         SimDrawWorldAxis({0,0,0}, 10.0f);  // 渲染世界原点XYZ轴
-        for (Entity* e : *world->getEntityListPtr())
+        for (Entity* e : world->getEntityListPtr())
         {
             renderEntity(e);  // 渲染实体方块
             renderVel(e);     // 渲染速度箭头
@@ -226,7 +226,7 @@ Entity* SimRender::getHoverEntity(){
     Ray mouseRay = GetMouseRay(GetMousePosition(), cam);
     float minDist = 1e10f;  // 初始化为极大值
 
-    for (Entity* e : *world->getEntityListPtr())
+    for (Entity* e : world->getEntityListPtr())
     {
         Vector3 center = getFloatCenter(e);
         // 构造包围盒：从底部中心向上延伸

@@ -110,7 +110,7 @@ public:
         world->uiInfoSprintf(buf);
         DrawText(buf, 10, yText,16, BLACK);
         yText += 22;
-        for (Entity* e : *world->getEntityListPtr())
+        for (Entity* e : world->getEntityListPtr())
         {
             if(yText > height){break;}
             e->uiInfoSprintf(buf);

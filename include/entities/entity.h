@@ -10,15 +10,19 @@
 #include <iomanip>
 #include <cmath>
 #include <cstring>
+#include <raylib.h>
 #include "world.h"
-#include "raylib.h"
 // TNT 引信倒计时长度（单位：游戏tick，1tick = 0.05秒）
 #define TNT_PERIOD 80
 // 实体状态：固定不动（被方块卡住等情况）
 #define FIXED 0
 // 实体状态：自由运动（空中/水中等）
 #define FREE 1
+
+
 class World;
+
+
 // 实体类，继承自 EntityData 以复用数据字段
 // 同时封装实体的运动逻辑、爆炸受击逻辑
 class Entity 
@@ -52,93 +56,36 @@ public:
         double com_x_, double com_y_,double com_z_,
         double bounding_x_, double bounding_y_, double bounding_z_,
         double g_, double drag_
-    ) : 
-    my_world(worldPtr_),
-    id(worldPtr_->registerId()),
-    status(status_),
-    x(x_),
-    y(y_),
-    z(z_),
-    mx(mx_),
-    my(my_),
-    mz(mz_),
-    com_x(com_x_),
-    com_y(com_y_),
-    com_z(com_z_),
-    bounding_x(bounding_x_),
-    bounding_y(bounding_y_),
-    bounding_z(bounding_z_),
-    g(g_),
-    drag(drag_)
-    {
-        std::strcpy(name, name_);
-        if(my_world != nullptr)
-            my_world->registerEntity(this);  // 自动注册到世界实体列表
-    }
-    Entity(World* worldPtr_, const Entity& other):
-        my_world(worldPtr_)
-    {
-        std::strcpy(name, other.name);
-        id = other.id;
-        status = other.status;
-        x = other.x;
-        y = other.y;
-        z = other.z;
-        mx = other.mx;
-        my = other.my;
-        mz = other.mz;
-        com_x = other.com_x;
-        com_y = other.com_y;
-        com_z = other.com_z;
-        bounding_x = other.bounding_x;
-        bounding_y = other.bounding_y;
-        bounding_z = other.bounding_z;
-        g = other.g;
-        drag = other.drag;
-        tick = other.tick;
-        color = other.color;
-    }
+    ) ;
+    Entity(World* worldPtr_, const Entity& other);
     virtual Entity* clone(World* worldPtr) const = 0;
 
     // ============================================================
     // 析构函数：输出销毁日志
     // ============================================================
-    virtual ~Entity() {
-        my_world->publishMessage("Entity destroied: "+std::string(name)+" id: "+std::to_string(id),RED);
-    }
+    virtual ~Entity();
 public:
     // ============================================================
     // 输出实体完整信息到控制台（用于调试）
     // 包含：ID、名称、状态、坐标、速度、重力、阻力
     // ============================================================
-    virtual void info() const {
-        using namespace std;
-        cout << fixed << setprecision(20);
-        cout << right << setw(15) << "id:" << right << setw(25) << id << "\n";
-        cout << right << setw(15) << "name:" << right << setw(25) << name << "\n";
-        cout << right << setw(15) << "tick:" << right << setw(25) << tick << "\n";
-        cout << right << setw(15) << "status" << right << setw(25) << (status==FIXED?"FIXED":"FREE") << "\n";
-        cout << right << setw(15) << "x:"    << right << setw(25) << x << "\n";
-        cout << right << setw(15) << "y:"    << right << setw(25) << y << "\n";
-        cout << right << setw(15) << "z:"    << right << setw(25) << z << "\n";
-        cout << right << setw(15) << "mx:"   << right << setw(25) << mx << "\n";
-        cout << right << setw(15) << "my:"   << right << setw(25) << my << "\n";
-        cout << right << setw(15) << "mz:"   << right << setw(25) << mz << "\n";
-        cout << right << setw(15) << "g:"    << right << setw(25) << g << "\n";
-        cout << right << setw(15) << "drag:" << right << setw(25) << drag << "\n";
-        cout << "----------------------------------------\n";
-    }
-    virtual void uiInfoSprintf(char* buf) const {sprintf(buf,"id: %d, name: %s, tick: %d", id, name, tick);};
+    virtual void info() const ;
+    virtual void uiInfoSprintf(char* buf) const;
     // 执行一个tick的物理运动（重力+阻力+速度更新）
-    virtual void nextMove(){
-        std::cout<<"Raw Entity Move"<<name<<std::endl;
-    };
+    virtual void nextMove();
 
     // 应用爆炸冲击力：根据爆心坐标和威力计算速度增量
-    virtual void applyExplosion(double x_, double y_, double z_, int power) {std::cout<<"Apply Explosion on Raw Entity"<<std::endl;}
+    virtual void applyExplosion(double x_, double y_, double z_, int power) ;
+    
+    
+    
+    
+    
     // tick计数器+1
     virtual void nextTick(){tick++;};
 
+    virtual bool shouldExpode() {return false;}
+    virtual int  getExplosionPower() const { return 0; }
     // 获取实体已存活tick数
     int getTick() {return tick;};
 
@@ -179,4 +126,6 @@ public:
     int getId() {return id;};
 
     Color getColor() {return color;};
+
+
 };

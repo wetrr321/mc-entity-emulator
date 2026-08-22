@@ -22,8 +22,7 @@
 #include <cstring>
 // 数学库 sqrt 等
 #include <cmath>
-// 读取json文件
-#include "json.hpp"
+
 
 #define WIDTH 1900
 #define HEIGHT 1000
@@ -81,13 +80,13 @@ void flow(){
         0,50,0,
         0,0,0
         );
-        // for(int i=0;i<1000;i++){
-        //     new Tnt(
-        //     &world,FREE,1,1000-i,
-        //     0,20,0,
-        //     rand01()-0.5,rand01()-0.5,rand01()-0.5
-        //     );
-        // }
+        for(int i=0;i<1000;i++){
+            new Tnt(
+            &world,FREE,0,1000-i,
+            0,20,0,
+            rand01(),rand01(),rand01()
+            );
+        }
         copyWorld=world;
     }
     if(world.getWorldTick() == 1000){world = copyWorld;}
@@ -165,8 +164,7 @@ int main()
             Entity* trackEntity = world.getEntity(r.getTrackingId());
             if(trackEntity != nullptr)
                 r.camFocus(r.getFloatCenter(trackEntity));
-            else
-                r.setIsTracking(false);
+
         }
 
 
@@ -186,9 +184,14 @@ int main()
         int hoverEntityId = hoverEntity == nullptr?0:hoverEntity->getId();
 
         if(IsKeyDown(KEY_LEFT_CONTROL)&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&hoverEntityId > 0){
-            if(hoverEntityId != -1)
-            r.setIsTracking(!r.getIsTracking());
-            r.setTrackingId(hoverEntityId);
+            if(r.getTrackingId() == hoverEntityId){
+                r.setIsTracking(false);
+            }else{
+                r.setTrackingId(hoverEntityId);
+                r.setIsTracking(true);
+            }
+
+
         }
 
         // ===== 左键单击：输出实体详细信息到控制台 =====
