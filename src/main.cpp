@@ -27,9 +27,6 @@
 #define WIDTH 1900
 #define HEIGHT 1000
 
-//TODO:: 实现Ctrl跟踪选中实体功能
-
-
 
 // 目标渲染帧率，窗口每秒刷新多少次，不等于游戏tick
 #define TARGET_FPS 60
@@ -45,14 +42,12 @@ bool isSimulationPaused = false;
 World world("default");     // 主世界
 World copyWorld("copy");    // 备份世界（用于回溯）
 
-
 /*
 TODO:: 珍珠空爆模拟流程
 1. 生成合适的珍珠与珍珠推进TNT
 2. 在合适的tick生成空爆TNT与其推进TNT
 3. 查看模拟结果
 */
-
 
 // 全局/类成员，只初始化一次，不要放在循环内部！
 std::mt19937 rng;
@@ -155,7 +150,7 @@ int main()
         }
 
         // ===== 中键平移（只有非跟踪模式才允许） =====
-        if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) && !r.getIsTracking())
+        if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) )
         {
             r.camPan(mouseDelta);
         }
