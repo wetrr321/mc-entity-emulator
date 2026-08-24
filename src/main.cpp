@@ -22,10 +22,16 @@
 #include <cstring>
 // 数学库 sqrt 等
 #include <cmath>
+#include "entry.h"
+#include "timeline.h"
+#include "flow.h"
 
 
-#define WIDTH 1900
-#define HEIGHT 1000
+Timeline* t = nullptr;
+Executor* executor = nullptr;
+
+#define WIDTH 1800
+#define HEIGHT 900
 
 
 // 目标渲染帧率，窗口每秒刷新多少次，不等于游戏tick
@@ -40,7 +46,8 @@ bool unlimitedSpeedMode = false;
 bool isSimulationPaused = false;
 // ========== 全局世界对象 ==========
 World world("default");     // 主世界
-World copyWorld("copy");    // 备份世界（用于回溯）
+
+
 
 /*
 TODO:: 珍珠空爆模拟流程
@@ -69,23 +76,9 @@ double rand01()
 // }
 
 void flow(){
-    if(world.getWorldTick() == 0){
-        new Pearl(
-        &world,FREE,
-        0,50,0,
-        0,0,0
-        );
-        for(int i=0;i<1000;i++){
-            new Tnt(
-            &world,FREE,0,1000-i,
-            0,20,0,
-            rand01(),rand01(),rand01()
-            );
-        }
-        copyWorld=world;
-    }
-    if(world.getWorldTick() == 1000){world = copyWorld;}
+    executor->execute();//执行一次流程
     world.worldNextTick();
+
 }
 // ============================================================
 // 主函数：程序入口
@@ -94,6 +87,7 @@ int main()
 {
     SimRender r(&world,WIDTH,HEIGHT,TARGET_FPS);  // 创建渲染器，绑定到主世界
     world.publishMessage("Init World!",GREEN);
+    initFlow(&world);
     float shiftSimTimer = 0.0f;    // Shift连续仿真计时器（毫秒）
     // ------------------------------------------------------------------------
 

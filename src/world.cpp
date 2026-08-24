@@ -9,7 +9,7 @@
 #include <cstring>
 #include <iostream>
 #define MESSAGE_MAX 40
-#define MESSAGE_LIFE 1
+#define MESSAGE_LIFE 2
 // ============================================================
 // 构造函数：初始化世界名称和计数器
 // ============================================================
