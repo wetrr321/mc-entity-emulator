@@ -30,7 +30,7 @@ class Entity
 protected:
     Color color=WHITE;
     World* my_world;  // 所属世界的指针，用于注册和交互
-    int id;           // 实体唯一ID
+    unsigned int id;           // 实体唯一ID
     int status;       // 实体状态：FIXED 或 FREE
     char name[20];    // 实体名称："pearl" 或 "tnt"
     double x, y, z;   // 实体底部坐标（世界坐标系）
@@ -72,10 +72,10 @@ public:
     virtual void info() const ;
     virtual void uiInfoSprintf(char* buf) const;
     // 执行一个tick的物理运动（重力+阻力+速度更新）
-    virtual void nextMove();
+    virtual void nextMove() = 0;
 
     // 应用爆炸冲击力：根据爆心坐标和威力计算速度增量
-    virtual void applyExplosion(double x_, double y_, double z_, int power) ;
+    virtual void applyExplosion(double x_, double y_, double z_, int power) = 0;
     
     
     
@@ -123,7 +123,7 @@ public:
     int getStatus() {return status;};
 
     // 获取实体唯一ID
-    int getId() {return id;};
+    unsigned int getId() {return id;};
 
     Color getColor() {return color;};
 

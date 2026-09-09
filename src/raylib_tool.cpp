@@ -29,7 +29,7 @@
 // 使用正交投影，fovy 同时作为轨道距离
 // ============================================================
 void SimRender::initCamera(){
-    cam = {0};
+    cam = {};
     cam.up         = {0.0f, 1.0f, 0.0f};
     cam.projection = CAMERA_ORTHOGRAPHIC;  // 正交投影，适合工程可视化
     cam.fovy       = camOrbitalDistance;   // 正交模式下fovy=视口高度
@@ -231,8 +231,8 @@ Entity* SimRender::getHoverEntity(){
         Vector3 center = getFloatCenter(e);
         // 构造包围盒：从底部中心向上延伸
         BoundingBox box;
-        box.min = (Vector3){center.x - float(e->getBoundingX()/2), center.y - float(e->getBoundingY()/2), center.z - float(e->getBoundingZ()/2)};
-        box.max = (Vector3){center.x + float(e->getBoundingX()/2), center.y + float(e->getBoundingY()/2), center.z + float(e->getBoundingZ()/2)};
+        box.min = Vector3{center.x - float(e->getBoundingX()/2), center.y - float(e->getBoundingY()/2), center.z - float(e->getBoundingZ()/2)};
+        box.max = Vector3{center.x + float(e->getBoundingX()/2), center.y + float(e->getBoundingY()/2), center.z + float(e->getBoundingZ()/2)};
 
         // 射线与包围盒碰撞检测
         RayCollision col = GetRayCollisionBox(mouseRay, box);

@@ -22,13 +22,9 @@
 #include <cstring>
 // 数学库 sqrt 等
 #include <cmath>
-#include "entry.h"
-#include "timeline.h"
-#include "flow.h"
 
 
-Timeline* t = nullptr;
-Executor* executor = nullptr;
+
 
 #define WIDTH 1800
 #define HEIGHT 900
@@ -65,18 +61,10 @@ double rand01()
     return dist01(rng);
 }
 
-// bool isMeetCondition(){
-//     double dy=std::abs(world.getEntity(tnt1)->getY()+0.0612500011920928955078125-0.2125000059604644775390625-world.getEntity(pearlId)->getY());
-//     double moddy = std::fmod(dy,1.0);
-//     if(moddy < 1e-6&&dy < 50){
-//         std::cout<<"meet condition:"<<dy<<std::endl;
-//         return true;
-//     }
-//     return false;
-// }
+
 
 void flow(){
-    executor->execute();//执行一次流程
+
     world.worldNextTick();
 
 }
@@ -87,7 +75,7 @@ int main()
 {
     SimRender r(&world,WIDTH,HEIGHT,TARGET_FPS);  // 创建渲染器，绑定到主世界
     world.publishMessage("Init World!",GREEN);
-    initFlow(&world);
+
     float shiftSimTimer = 0.0f;    // Shift连续仿真计时器（毫秒）
     // ------------------------------------------------------------------------
 
@@ -170,7 +158,7 @@ int main()
 
         // ===== 射线拾取，获取当前悬浮指向的实体 =====
         Entity* hoverEntity = r.getHoverEntity();
-        int hoverEntityId = hoverEntity == nullptr?0:hoverEntity->getId();
+        unsigned int hoverEntityId = hoverEntity == nullptr?0:hoverEntity->getId();
 
         if(IsKeyDown(KEY_LEFT_CONTROL)&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&hoverEntityId > 0){
             if(r.getTrackingId() == hoverEntityId){

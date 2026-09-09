@@ -25,9 +25,12 @@ World::World(const char* name_)
 // 每个实体通过 Entity 的拷贝构造函数在新世界中重建
 // ============================================================
 World::World(const World& other) :
-    id(other.id),
-    worldTick(other.worldTick)
+    entityList(),
+    messageStack(),
+    worldTick(other.worldTick),
+    id(other.id)
 {
+    strcpy(name, other.name);
     for(auto i = other.entityList.begin(); i != other.entityList.end(); i++) {
         entityList.push_back((*i)->clone(this));
     }
@@ -114,7 +117,7 @@ void World::printEntityInfo() {
 // ============================================================
 // 获取实体：根据实体ID返回实体指针
 // ============================================================
-Entity* World::getEntity(int id_){
+Entity* World::getEntity(unsigned int id_){
         for(auto e : entityList) {
             if(e->getId() == id_) return e;
         }

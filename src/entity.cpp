@@ -108,14 +108,9 @@
     }
     void Entity::uiInfoSprintf(char* buf) const {sprintf(buf,"id: %d, name: %s, tick: %d", id, name, tick);};
     // 执行一个tick的物理运动（重力+阻力+速度更新）
-    void Entity::nextMove(){
-        my_world->publishMessage("Entity move: "+std::string(name)+" id: "+std::to_string(id),RED);
-    };
 
     // 应用爆炸冲击力：根据爆心坐标和威力计算速度增量
-    void Entity::applyExplosion(double x_, double y_, double z_, int power) {
-        my_world->publishMessage("Entity apply explosion: "+std::string(name)+" id: "+std::to_string(id),RED);
-    }
+
 
 
 

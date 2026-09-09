@@ -70,7 +70,7 @@ public:
         z += mz;
         mz = mz * drag;
     }
-    void applyExplosion(double x_, double y_, double z_, int power) override
+    void applyExplosion(double x_, double y_, double z_, int power_) override
     {
         // 爆心到实体底部的距离
         double d2 = std::sqrt((x-x_)*(x-x_)+(y-y_)*(y-y_)+(z-z_)*(z-z_));
@@ -80,10 +80,10 @@ public:
         double dx = (x-x_)/d2;
         double dz = (z-z_)/d2;
         // 冲击力 = max(0, 1-d2/8) * 方向 * 威力
-        this->my += (std::max(0.0,1-d2/8))*dy*power;
-        this->mx += (std::max(0.0,1-d2/8))*dx*power;
-        this->mz += (std::max(0.0,1-d2/8))*dz*power;
-        my_world->publishMessage("Explosion hit "+std::string(name)+" id: "+std::to_string(id)+" m change "+std::to_string(std::max(0.0,1-d2/8)*power),WHITE);
+        this->my += (std::max(0.0,1-d2/8))*dy*power_;
+        this->mx += (std::max(0.0,1-d2/8))*dx*power_;
+        this->mz += (std::max(0.0,1-d2/8))*dz*power_;
+        my_world->publishMessage("Explosion hit "+std::string(name)+" id: "+std::to_string(id)+" m change "+std::to_string(std::max(0.0,1-d2/8)*power_),WHITE);
     }
     void uiInfoSprintf(char* buf) const override {sprintf(buf,"id: %d, name: %s, tick: %d, power: %d, fuse: %d", id, name, tick, power, fuse);}
     void nextTick() override

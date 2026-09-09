@@ -31,7 +31,7 @@ private:
     int width,height;   // 窗口宽度、高度
 
     bool isTracking = false;       // 是否正在跟踪实体标志
-    int trackingId = -1;           // 追踪器ID指针
+    unsigned int trackingId = -1u;           // 追踪器ID指针
 
 
     bool unlimitedSpeedMode = false;  // 无限速模拟开关
@@ -125,10 +125,10 @@ public:
     void setIsTracking(bool isTracking_){
         isTracking = isTracking_;
     }
-    void setTrackingId(int trackingId_){
+    void setTrackingId(unsigned int trackingId_){
         trackingId = trackingId_;
     }
-    int getTrackingId()const{
+    unsigned int getTrackingId()const{
         return trackingId;
     }
 };

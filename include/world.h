@@ -23,8 +23,8 @@ class World
 private:
     std::vector<Entity*> entityList;  // 实体指针列表（World负责释放内存）
     std::vector<Message> messageStack; // 消息stack（World负责释放内存）
-    int worldTick = 0;  // 世界已运行的tick总数
-    int id = 0;         // 当前实体ID分配计数器
+    unsigned int worldTick = 0;  // 世界已运行的tick总数
+    unsigned int id = 0;         // 当前实体ID分配计数器
     char name[20];                     // 世界名称
 public:
     // 构造函数：创建指定名称的世界
@@ -46,13 +46,13 @@ public:
     // 输出所有实体信息到控制台
     void printEntityInfo();
 
-    Entity* getEntity(int id_) ;
+    Entity* getEntity(unsigned int id_) ;
     // 世界tick+1
     void tickGrow(){worldTick++;}
     // 获取当前世界tick数
-    int getWorldTick() { return worldTick;}
+    unsigned int getWorldTick() { return worldTick;}
 
-    int registerId() {
+    unsigned int registerId() {
         id++;
         return id;
     }
