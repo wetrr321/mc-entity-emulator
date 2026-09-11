@@ -23,12 +23,19 @@
 // 数学库 sqrt 等
 #include <cmath>
 
-
-
+extern "C" {
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+}
 
 #define WIDTH 1800
 #define HEIGHT 900
 
+extern void registerLuaFunctions(lua_State* L);
+
+static lua_State* L = nullptr;
+static const char* lua_SCRIPT = nullptr;
 
 // 目标渲染帧率，窗口每秒刷新多少次，不等于游戏tick
 #define TARGET_FPS 60
@@ -41,7 +48,7 @@ bool unlimitedSpeedMode = false;
 // 模拟暂停开关
 bool isSimulationPaused = false;
 // ========== 全局世界对象 ==========
-World world("default");     // 主世界
+World world;     // 主世界
 
 
 
@@ -65,16 +72,34 @@ double rand01()
 
 void flow(){
 
+    // 执行Lua脚本一次
+    if(lua_SCRIPT != nullptr)luaL_dofile(L,lua_SCRIPT);
     world.worldNextTick();
 
 }
 // ============================================================
 // 主函数：程序入口
 // ============================================================
-int main()
-{
+int main(int argc, char* argv[])
+{   
+
+    
+    L = luaL_newstate();
+    luaL_openlibs(L);
+    registerLuaFunctions(L);
+    
     SimRender r(&world,WIDTH,HEIGHT,TARGET_FPS);  // 创建渲染器，绑定到主世界
     world.publishMessage("Init World!",GREEN);
+
+
+    if(argc != 2)
+    {
+        std::cout<<std::endl<<"Warning: You pass no or extra script files."<<std::endl<<"Usage: *.exe *.lua"<<std::endl<<"emulator run with no action"<<std::endl;
+
+    }else{
+        lua_SCRIPT = argv[1];
+    }
+
 
     float shiftSimTimer = 0.0f;    // Shift连续仿真计时器（毫秒）
     // ------------------------------------------------------------------------

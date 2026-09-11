@@ -13,9 +13,8 @@
 // ============================================================
 // 构造函数：初始化世界名称和计数器
 // ============================================================
-World::World(const char* name_) 
+World::World() 
 {
-    strcpy(name, name_);
     id = 0;
     worldTick = 0;
 }
@@ -30,7 +29,6 @@ World::World(const World& other) :
     worldTick(other.worldTick),
     id(other.id)
 {
-    strcpy(name, other.name);
     for(auto i = other.entityList.begin(); i != other.entityList.end(); i++) {
         entityList.push_back((*i)->clone(this));
     }
@@ -158,6 +156,3 @@ void World::updateMessageStack() {
         }
     }
 }
-
-
-

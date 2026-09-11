@@ -72,3 +72,6 @@ Testing/
 # My ignore
 backupMain*
 .vscode/
+
+# ref files
+ref/

@@ -25,10 +25,9 @@ private:
     std::vector<Message> messageStack; // 消息stack（World负责释放内存）
     unsigned int worldTick = 0;  // 世界已运行的tick总数
     unsigned int id = 0;         // 当前实体ID分配计数器
-    char name[20];                     // 世界名称
 public:
-    // 构造函数：创建指定名称的世界
-    World(const char* name_);
+    // 默认构造函数
+    World();
 
     // 拷贝构造函数：深拷贝所有实体到新世界
     World(const World& other);

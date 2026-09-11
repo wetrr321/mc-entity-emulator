@@ -194,6 +194,8 @@ void SimRender::renderFrame(){
             renderEntity(e);  // 渲染实体方块
             renderVel(e);     // 渲染速度箭头
         }
+    //画出摄像机中心点
+    DrawSphere(cam.target, 0.1f, RED);
     EndMode3D();
 }
 
